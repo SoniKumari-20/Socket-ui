@@ -1,115 +1,183 @@
 import React, { useState } from "react";
-import axios from "axios";
-import "./Style/LoginStylePage.css";
+import { useForm, Controller } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
-import { Image } from "primereact/image";
-import { loginUser } from "../api/functions";
+import { Password } from "primereact/password";
+import { Dialog } from "primereact/dialog";
+import { Divider } from "primereact/divider";
+import { classNames } from "primereact/utils";
+import "./Style/FormDemo.css";
 import { signupUser } from "../api/functions";
-export default function SignUp() {
-  const [signUpInfo, setSignUpInfo] = useState({
-    username: "",
+
+const SignUp = () => {
+  const [showMessage, setShowMessage] = useState(false);
+  const [formData, setFormData] = useState({});
+  const defaultValues = {
+    name: "",
     email: "",
     password: "",
     passwordConfirm: "",
-  });
-  const handleCollectData = (userInfo) => {
-    const { name, value } = userInfo.target;
-    setSignUpInfo({ ...signUpInfo, [name]: value });
   };
-  console.log(signUpInfo);
-  const handleSignUp = ({ name }) => {
-    console.log(name);
-    signupUser();
+
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    reset,
+  } = useForm({ defaultValues });
+
+  const onSubmit = async (data) => {
+    setFormData(data);
+    try {
+      const res = await signupUser({ ...data, passwordConfirm: data.password });
+      console.log(res);
+      setShowMessage(true);
+      reset();
+      document.location = "/login";
+    } catch (err) {
+      console.log(err);
+    }
   };
+
+  const getFormErrorMessage = (name) => {
+    return errors[name] && <small className="p-error">{errors[name].message}</small>;
+  };
+
+  const dialogFooter = (
+    <div className="flex justify-content-center">
+      <Button
+        label="OK"
+        className="p-button-text"
+        autoFocus
+        onClick={() => setShowMessage(false)}
+      />
+    </div>
+  );
+  const passwordHeader = <h6>Pick a password</h6>;
+  const passwordFooter = (
+    <React.Fragment>
+      <Divider />
+      <p className="mt-2">Suggestions</p>
+      <ul className="pl-2 ml-2 mt-0" style={{ lineHeight: "1.5" }}>
+        <li>At least one lowercase</li>
+        <li>At least one uppercase</li>
+        <li>At least one numeric</li>
+        <li>Minimum 8 characters</li>
+      </ul>
+    </React.Fragment>
+  );
+
   return (
-    <div className="flex align-items-center  justify-content-evenly  OuterDiv shadow-6">
-      <div className="h-5 flex  flex-column" style={{ width: "50%" }}>
-        <div className="align-items-center text-center flex -mt-6 logo">
-          <Image
-            src="https://1000logos.net/wp-content/uploads/2022/01/RANDOM-CHAT-Logo.png"
-            alt="Image"
-            width="40"
-            height="20"
-          />
-          <p className=" text-xs  font-medium ">Socket</p>
-        </div>
-        <div className="BottomImage flex align-items-center  justify-content-center">
-          <Image
-            src="/loginPageImage.png"
-            alt="Image"
-            height="100%"
-            width="100%"
-          />
-        </div>
-      </div>
-      <div
-        className="flex align-items-start flex-column justify-content-start  h-5  "
-        style={{ width: "50%" }}
+    <div className="form-demo">
+      <Dialog
+        visible={showMessage}
+        onHide={() => setShowMessage(false)}
+        position="top"
+        footer={dialogFooter}
+        showHeader={false}
+        breakpoints={{ "960px": "80vw" }}
+        style={{ width: "30vw" }}
       >
-        <div className="mt-2">
-          <h4 className="m-0 p-0">Create Account</h4>
+        <div className="flex justify-content-center flex-column pt-6 px-3">
+          <i
+            className="pi pi-check-circle"
+            style={{ fontSize: "5rem", color: "var(--green-500)" }}
+          ></i>
+          <h5>Registration Successful!</h5>
+          <p style={{ lineHeight: 1.5, textIndent: "1rem" }}>
+            Your account is registered under name <b>{formData.name}</b>{" "}
+          </p>
         </div>
-        <div className="mt-2">
-          <p className="p-0 m-0  WholeLabels">UserName</p>
-          <InputText
-            placeholder="username"
-            className="h-2rem"
-            name="username"
-            value={signUpInfo.username}
-            onChange={(e) => handleCollectData(e)}
-          ></InputText>
-          <p className="p-0 m-0 WholeLabels">Email</p>
-          <InputText
-            placeholder="email"
-            className="h-2rem"
-            name="email"
-            value={signUpInfo.email}
-            onChange={(e) => handleCollectData(e)}
-          ></InputText>
-          <p className="p-0 m-0 WholeLabels  ">Password</p>
-          <InputText
-            className="h-2rem "
-            placeholder="password"
-            value={signUpInfo.password}
-            name="password"
-            onChange={(e) => handleCollectData(e)}
-          />
-          <p className="p-0 m-0 WholeLabels ">Confirm Password</p>
-          <InputText
-            className="h-2rem "
-            placeholder="confirmPassword"
-            value={signUpInfo.passwordConfirm}
-            name="passwordConfirm"
-            onChange={(e) => handleCollectData(e)}
-          />
-        </div>
-        <div className="mt-2">
-          <span
-            style={{ color: "#ef0000", fontSize: "10px", fontWeight: "600" }}
-          >
-            Forgot password ?
-          </span>
-        </div>
-        <div className="mt-2 flex flex-column" style={{ width: "50%" }}>
-          <Button
-            severity="danger"
-            label="log in"
-            style={{ backgroundColor: "#ef0000", color: "white" }}
-            className=" p-1 text-center WholeLabels"
-            rounded
-            onClick={() => loginUser({ ...LoginInfo })}
-          />
-          <Button
-            label="LOGIN WITH GOOGLE "
-            className=" mt-2 p-1 text-center WholeLabels"
-            rounded
-            outlined
-            style={{ color: "#ef0000" }}
-            severity="danger"
-          />
+      </Dialog>
+
+      <div className="flex justify-content-center">
+        <div className="card">
+          <h5 className="text-center">Register</h5>
+          <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
+            <div className="field">
+              <span className="p-float-label">
+                <Controller
+                  name="name"
+                  control={control}
+                  rules={{ required: "Name is required." }}
+                  render={({ field, fieldState }) => (
+                    <InputText
+                      id={field.name}
+                      {...field}
+                      autoFocus
+                      className={classNames({ "p-invalid": fieldState.invalid })}
+                    />
+                  )}
+                />
+                <label htmlFor="name" className={classNames({ "p-error": errors.name })}>
+                  Name*
+                </label>
+              </span>
+              {getFormErrorMessage("name")}
+            </div>
+            <div className="field">
+              <span className="p-float-label p-input-icon-right">
+                <i className="pi pi-envelope" />
+                <Controller
+                  name="email"
+                  control={control}
+                  rules={{
+                    required: "Email is required.",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
+                      message: "Invalid email address. E.g. example@email.com",
+                    },
+                  }}
+                  render={({ field, fieldState }) => (
+                    <InputText
+                      id={field.name}
+                      {...field}
+                      className={classNames({ "p-invalid": fieldState.invalid })}
+                    />
+                  )}
+                />
+                <label
+                  htmlFor="email"
+                  className={classNames({ "p-error": !!errors.email })}
+                >
+                  Email*
+                </label>
+              </span>
+              {getFormErrorMessage("email")}
+            </div>
+            <div className="field">
+              <span className="p-float-label">
+                <Controller
+                  name="password"
+                  control={control}
+                  rules={{ required: "Password is required." }}
+                  render={({ field, fieldState }) => (
+                    <Password
+                      id={field.name}
+                      {...field}
+                      toggleMask
+                      className={classNames({ "p-invalid": fieldState.invalid })}
+                      header={passwordHeader}
+                      footer={passwordFooter}
+                    />
+                  )}
+                />
+                <label
+                  htmlFor="password"
+                  className={classNames({ "p-error": errors.password })}
+                >
+                  Password*
+                </label>
+              </span>
+              {getFormErrorMessage("password")}
+            </div>
+
+            <Button type="submit" label="Submit" className="mt-2" />
+          </form>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default SignUp;

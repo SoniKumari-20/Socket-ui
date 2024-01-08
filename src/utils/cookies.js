@@ -15,3 +15,11 @@ export const updatedCookie = ({ name, value, expires }) => {
 export const readCookie = ({ name }) => {
   return Cookies.get(name);
 };
+
+export const parseCookies = (cookieString) => {
+  return cookieString.split("; ").reduce((acc, cookie) => {
+    const [name, value] = cookie.split("=");
+    acc[name] = value;
+    return acc;
+  }, {});
+};

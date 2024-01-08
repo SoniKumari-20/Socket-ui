@@ -10,6 +10,7 @@ const instance = axios.create({
     "Content-Type": "application/json",
     Authorization: `Bearer ${readCookie("socketAppToken")}`,
   },
+  withCredentials:true
 });
 
 instance.interceptors.response.use(

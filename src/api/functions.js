@@ -1,6 +1,6 @@
 import HttpClient from "./httpClient";
 
-export const loginUser = ({ email, password }) => {
+export const loginUser = async ({ email, password }) => {
   return HttpClient.post("/users/login", {
     email,
     password,
